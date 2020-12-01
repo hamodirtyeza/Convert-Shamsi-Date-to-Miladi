@@ -1,0 +1,65 @@
+CREATE OR REPLACE FUNCTION public.j2g(in_date date)
+ RETURNS date
+ LANGUAGE plpgsql
+AS $function$
+declare 
+	miladi_year int;
+	miladi_month int;
+	miladi_day int;
+	miladi_dayno int[];
+	shamsi_date varchar;
+	yy int;
+	mm int;
+	dd int;
+begin
+	if in_date is null then
+		return null;
+	end if;
+	shamsi_date:=replace(cast(in_date as varchar),'-','');
+	yy:=left(shamsi_date,4);
+	if yy > 1900 then
+		return cast(in_date as varchar );
+	end if;
+	mm:=substring(shamsi_date,5,2);
+	dd:=substring(shamsi_date,7,2);
+	
+	
+	miladi_year :=yy+621;
+	miladi_month:=mm+2;
+	miladi_day:= dd+21;
+
+	miladi_dayno[1]:=31;
+	miladi_dayno[2]:=28;
+	miladi_dayno[3]:=31;
+	miladi_dayno[4]:=30;
+	miladi_dayno[5]:=31;
+	miladi_dayno[6]:=30;
+	miladi_dayno[7]:=31;
+	miladi_dayno[8]:=31;
+	miladi_dayno[9]:=30;
+	miladi_dayno[10]:=31;
+	miladi_dayno[11]:=30;
+	miladi_dayno[12]:=31;
+
+
+	if miladi_month > 12 then
+		miladi_month=miladi_month-12;
+		miladi_year=miladi_year+1;
+	end if;
+	
+		
+	if miladi_day > miladi_dayno[miladi_month] then
+		miladi_day=miladi_day-miladi_dayno[miladi_month];
+		miladi_month:=miladi_month+1;
+		
+		if miladi_month > 12 then
+			miladi_month=miladi_month-12;
+			miladi_year=miladi_year+1;
+		end if;	
+	end if;
+	
+	return cast(concat(cast(miladi_year as varchar),'-',cast(miladi_month as varchar), '-' , cast (miladi_day as varchar)) as date);
+
+end;
+$function$
+;
